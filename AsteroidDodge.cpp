@@ -71,13 +71,11 @@ SDL_Texture* loadTexture(const char* path) {
         printf("Khong the tai anh tu %s! SDL_image Error: %s\n", path, IMG_GetError());
     }
     else {
-        // Tạo texture từ surface
         newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
         if (newTexture == NULL) {
             printf("Khong the tao texture tu %s! SDL Error: %s\n", path, SDL_GetError());
         }
 
-        // Giải phóng surface không cần thiết nữa
         SDL_FreeSurface(loadedSurface);
     }
 
@@ -133,7 +131,6 @@ bool init() {
         return false;
     }
 
-    // Tạo Renderer
     gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (gRenderer == NULL) {
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
@@ -152,17 +149,14 @@ bool init() {
     return true;
 }
 
-// Hàm tải ảnh mới
 bool loadMedia() {
     bool success = true;
 
-    // Tải Texture Phi thuyền
     gPlayerTexture = loadTexture(PLAYER_IMG_PATH);
     if (gPlayerTexture == NULL) {
         success = false;
     }
 
-    // Tải Texture Thiên thạch
     gAsteroidTexture = loadTexture(ASTEROID_IMG_PATH);
     if (gAsteroidTexture == NULL) {
         success = false;
@@ -232,7 +226,6 @@ void handleEvents() {
         }
     }
 
-    // Xử lý Input từ Bàn phím
     const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL);
 
     if (currentKeyStates[SDL_SCANCODE_LEFT] || currentKeyStates[SDL_SCANCODE_A]) {
@@ -245,7 +238,6 @@ void handleEvents() {
     if (gPlayer.x < 0) gPlayer.x = 0;
     if (gPlayer.x > SCREEN_WIDTH - PLAYER_SIZE) gPlayer.x = SCREEN_WIDTH - PLAYER_SIZE;
 
-    // Cập nhật SDL_Rect từ float x
     gPlayer.rect.x = (int)gPlayer.x;
 }
 
@@ -256,13 +248,11 @@ void spawnAsteroid() {
     if (currentTime > gLastSpawnTime + currentSpawnInterval) {
         Asteroid newAsteroid;
 
-        // Vị trí x ngẫu nhiên
         int randX = rand() % (SCREEN_WIDTH - ASTEROID_SIZE);
 
         newAsteroid.y_pos = -ASTEROID_SIZE;
         newAsteroid.rect = { randX, (int)newAsteroid.y_pos, ASTEROID_SIZE, ASTEROID_SIZE };
 
-        // Tốc độ rơi ngẫu nhiên
         newAsteroid.speed = (float)(rand() % 3 + 2);
 
         gAsteroids.push_back(newAsteroid);
@@ -278,19 +268,14 @@ bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
 }
 
 void update(float deltaTime) {
-    // Tăng tốc độ game dựa trên điểm
     gGameSpeedMultiplier = 1.0f + (float)gScore / 25.0f * 0.2f;
 
-    // Sinh Thiên thạch
     spawnAsteroid();
 
-    // Cập nhật vị trí Thiên thạch và kiểm tra va chạm
     for (size_t i = 0; i < gAsteroids.size(); ++i) {
-        // Cập nhật vị trí y (dựa trên tốc độ game)
         gAsteroids[i].y_pos += gAsteroids[i].speed * gGameSpeedMultiplier * deltaTime * 60.0f;
         gAsteroids[i].rect.y = (int)gAsteroids[i].y_pos;
 
-        // Kiểm tra va chạm
         if (checkCollision(gPlayer.rect, gAsteroids[i].rect)) { 
             if (gCollisionSound != NULL) {
                 Mix_PlayChannel(-1, gCollisionSound, 0);
@@ -304,7 +289,6 @@ void update(float deltaTime) {
             return;
         }
 
-        // Xóa Thiên thạch nếu ra khỏi màn hình và tăng điểm
         if (gAsteroids[i].y_pos > SCREEN_HEIGHT) {
             gAsteroids.erase(gAsteroids.begin() + i);
             gScore++;
@@ -314,11 +298,9 @@ void update(float deltaTime) {
 }
 
 void render() {
-    // Đặt màu nền (Không gian - Xanh đen)
     SDL_SetRenderDrawColor(gRenderer, 15, 20, 35, 255);
     SDL_RenderClear(gRenderer);
 
-    // VẼ PLAYER (Phi thuyền)
     if (gPlayerTexture) {
         SDL_RenderCopy(gRenderer, gPlayerTexture, NULL, &gPlayer.rect);
     }
@@ -374,3 +356,4 @@ int main(int argc, char* args[]) {
     close();
     return 0;
 }
+
